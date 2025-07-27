@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus-operator
+  namespace: monitoring
+spec:
+  replicas: 1
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: operator
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+  template:
+    metadata:
+      name: prometheus-operator
+      labels:
+        app: operator
+    spec:
+      serviceAccountName: prometheus-operator
+      containers:
+        - name: operator
+          image: quay.io/prometheus-operator/prometheus-operator:v0.73.0
+          args:
+            - --log-level=info

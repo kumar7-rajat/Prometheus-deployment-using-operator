@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-prometheus
+  namespace: monitoring
+spec:
+  ingressClassName: nginx  #Important! - make sure this is same as your ingressClass name
+  rules:
+    - host: prometheus.192.168.49.2.sslip.io #update your own host
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: prometheus-server
+                port:
+                  number: 80
+

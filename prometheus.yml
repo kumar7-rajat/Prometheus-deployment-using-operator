@@ -1,0 +1,38 @@
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: prometheus-server
+  namespace: monitoring
+spec:
+  serviceAccountName: prometheus
+  replicas: 1
+  serviceMonitorSelector: {}
+  podMetadata:
+    labels:
+      name: prometheus-server
+  storage:
+    volumeClaimTemplate:
+      metadata:
+        name: pvc-prometheus
+      spec:
+        storageClassName: standard
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+  persistentVolumeClaimRetentionPolicy:
+    whenDeleted: Retain
+    whenScaled: Retain
+  alerting:
+    alertmanagers:
+      - namespace: monitoring
+        name: alertmanager
+        port: 9093
+  resources:
+    requests:
+      memory: 400Mi
+      cpu: 200m
+    limits:
+      memory: 800Mi
+      cpu: 500m
