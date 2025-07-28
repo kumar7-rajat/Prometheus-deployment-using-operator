@@ -3,6 +3,8 @@ kind: Prometheus
 metadata:
   name: prometheus-server
   namespace: monitoring
+  labels:
+    name: prometheus-server
 spec:
   serviceAccountName: prometheus
   replicas: 1
