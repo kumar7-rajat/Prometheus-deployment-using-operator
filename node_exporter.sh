@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#Use this script to install node_exporter as Systemd service on node
+
 # Set version
 NODE_EXPORTER_VERSION="1.8.0"
 
@@ -7,7 +9,7 @@ NODE_EXPORTER_VERSION="1.8.0"
 curl -Lo /tmp/node_exporter-${NODE_EXPORTER_VERSION}.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v${NODE_EXPORTER_VERSION}/node_exporter-${NODE_EXPORTER_VERSION}.linux-amd64.tar.gz
 
 # Extract
-tar xvf /tmp/node_exporter-${NODE_EXPORTER_VERSION}.linux-amd64.tar.gz
+tar xvf /tmp/node_exporter-${NODE_EXPORTER_VERSION}.linux-amd64.tar.gz -C /tmp/
 
 # Move binary to /usr/local/bin
 sudo mv /tmp/node_exporter-${NODE_EXPORTER_VERSION}.linux-amd64/node_exporter /usr/local/bin/node_exporter
