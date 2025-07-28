@@ -1,37 +1,44 @@
 ## Prometheus Deployment on Kubernetes with Prometheus Operator
 
-This repository contains YAML manifests and instructions to deploy Prometheus on a Kubernetes cluster using the Prometheus Operator. It provides a straightforward, reproducible setup for a Prometheus instance on Minikube (or any Kubernetes environment). Prometheus Operator updated configuration dynamically by using the concept of Service Monitor.
+A concise, reproducible setup for deploying Prometheus on a Kubernetes cluster (Minikube or any Kubernetes environment), powered by the Prometheus Operator and ServiceMonitor resources.
 
 ---
 
 ### Table of Contents
 
-* [Project Overview](#project-overview)
-* [Prerequisites](#prerequisites)
-* [Deployment Steps](#deployment-steps)
+1. [Project Overview](#project-overview)
+2. [Prerequisites](#prerequisites)
+3. [Deployment Steps](#deployment-steps)
 
-  * [1. Create Namespace](#1-create-namespace)
-  * [2. Deploy Prometheus Operator](#2-deploy-prometheus-operator)
-  * [3. Deploy Prometheus Custom Resource](#3-deploy-prometheus-custom-resource)
-  * [4. Expose Prometheus Service](#4-expose-prometheus-service)
-  * [5. Create ServiceMonitor](#5-create-servicemonitor)
-  * [6. Access Prometheus UI](#6-access-prometheus-ui)
-* [Label Configuration for Service Discovery](#label-configuration-for-service-discovery)
-* [Validation](#validation)
-* [Cleanup](#cleanup)
-* [License](#license)
+   1. [Create Namespace](#1-create-namespace)
+   2. [Deploy Prometheus Operator](#2-deploy-prometheus-operator)
+   3. [Deploy Prometheus Custom Resource](#3-deploy-prometheus-custom-resource)
+   4. [Expose Prometheus Service](#4-expose-prometheus-service)
+   5. [Create ServiceMonitor](#5-create-servicemonitor)
+   6. [Access Prometheus UI](#6-access-prometheus-ui)
+4. [Label Configuration for Service Discovery](#label-configuration-for-service-discovery)
+5. [Validation](#validation)
+6. [Cleanup](#cleanup)
+7. [License](#license)
 
 ---
 
 ## Project Overview
 
-This setup uses the [Prometheus Operator](https://github.com/prometheus-operator/prometheus-operator) to manage Prometheus instances in Kubernetes. The operator automates creation of StatefulSets and Services for Prometheus resources and integrates ServiceMonitor objects for scraping metrics.
+This repository demonstrates how to deploy Prometheus using the [Prometheus Operator](https://github.com/prometheus-operator/prometheus-operator), which automates:
+
+* Creation of Prometheus StatefulSets and Services
+* Dynamic configuration of scrape targets via **ServiceMonitor** custom resources
 
 ## Prerequisites
 
-* A running Kubernetes cluster (e.g., [Minikube](https://minikube.sigs.k8s.io/docs/) with ingress addon).
-* `kubectl` configured to communicate with your cluster.
-* Install mandatories CRDs using below link:
+* A running Kubernetes cluster (e.g., [Minikube](https://minikube.sigs.k8s.io/docs/) with the ingress addon enabled).
+* `kubectl` installed and configured to target your cluster.
+* **Prometheus CRDs** applied:
+
+  ```bash
+  kubectl apply -f https://raw.githubusercontent.com/prometheus-operator/prometheus-operator/main/bundle.yaml
+  ```
 
 ## Deployment Steps
 
@@ -50,7 +57,7 @@ kubectl apply -f rolebinding-operator.yml
 kubectl apply -f prometheus-operator.yml
 ```
 
-Verify operator status:
+Verify the operator:
 
 ```bash
 kubectl get pods,svc,deploy -n monitoring
@@ -65,7 +72,7 @@ kubectl apply -f rolebinding-prometheus.yml
 kubectl apply -f prometheus.yml
 ```
 
-This creates a Prometheus StatefulSet and headless service.
+This step creates a Prometheus StatefulSet and headless Service for internal cluster scraping.
 
 ### 4. Expose Prometheus Service
 
@@ -80,9 +87,16 @@ kubectl apply -f ingress.yml
 kubectl apply -f service-monitor.yml
 ```
 
+The ServiceMonitor tells Prometheus which Services to scrape.
+
 ### 6. Access Prometheus UI
 
-* **Ingress:** Navigate to the host/path configured in `ingress.yml`.
+* **Via Ingress**: browse to the host/path defined in `ingress.yml`.
+* **Minikube CLI**:
+
+  ```bash
+  eval "$(minikube service prometheus-server --url -n monitoring)"
+  ```
 
 ---
 
@@ -97,7 +111,7 @@ metadata:
   name: prometheus-server
   namespace: monitoring
   labels:
-    name: prometheus-server  # Service labels that will be used by Service Monitor
+    name: prometheus-server  # Must match ServiceMonitor.matchLabels
 spec:
   selector:
     name: prometheus-server
@@ -114,7 +128,7 @@ The ServiceMonitor (`service-monitor.yml`) uses:
 spec:
   selector:
     matchLabels:
-      name: prometheus-server  # Service label that is defined in the service .metadata.labels
+      name: prometheus-server  # Must match Service label
   endpoints:
     - port: webs
       path: /metrics
@@ -135,9 +149,11 @@ kubectl apply -f service-prometheus.yml
 # List ServiceMonitors
 kubectl get servicemonitor -n monitoring
 
-# Port-forward to Prometheus and view targets
+# Port-forward and check scrape targets
 kubectl port-forward svc/prometheus-server 9090:80 -n monitoring
-# Or open host that is defined in the ingress: http://<ingress-host>/target
+# Open http://localhost:9090/targets in your browser
+
+# Or use ingress host/path: http://<ingress-host>/target
 ```
 
 ---
@@ -160,6 +176,15 @@ kubectl delete -f namespace.yml
 ```
 
 ---
+
+## Images
+
+<img width="1910" height="426" alt="image" src="https://github.com/user-attachments/assets/192d7a07-8846-4375-a5d0-85cb65284eab" />
+
+
+
+<img width="1910" height="426" alt="image" src="https://github.com/user-attachments/assets/8d96b78f-7b70-4f27-9312-5ab6bfbd1f75" />
+
 
 ## License
 
