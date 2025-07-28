@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-exporter
+  namespace: monitoring
+spec:
+  revisionHistoryLimit: 5
+  selector:
+    matchLabels:
+      app: node-exporter
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      name: node-exporter
+      labels:
+        app: node-exporter
+    spec:
+      hostPID: true  # give access to host process ID
+      hostNetwork: true # bind host network space with container
+      containers:
+        - name: node-exporter
+          image: prom/node-exporter
+          args:
+            - --path.rootfs=/host
+          securityContext:
+            privileged: true  # Root access
+          volumeMounts:
+            - name: host-volume
+              mountPath: /host
+              readOnly: true  # readonly host filesystem
+      volumes:
+        - name: host-volume
+          hostPath:
+            path: /
+          
+
